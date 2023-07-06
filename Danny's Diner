@@ -87,6 +87,7 @@ INNER JOIN
     dannys_diner.menu AS m
     USING(product_id);
 
+
 -- 7. Which item was purchased just before the customer became a member?
 SELECT
     s.customer_id,
