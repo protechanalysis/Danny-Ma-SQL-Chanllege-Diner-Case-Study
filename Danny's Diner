@@ -87,7 +87,6 @@ INNER JOIN
     dannys_diner.menu AS m
     USING(product_id);
 
-
 -- 7. Which item was purchased just before the customer became a member?
 SELECT
     s.customer_id,
@@ -154,28 +153,81 @@ using(product_id)
 GROUP BY customer_id;
 
 -- 10. In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not justdannys_diner sushi - how many points do customer A and B have at the end of January?
-SELECT
+SELECT 
     s.customer_id,
     SUM(
         CASE
-            WHEN s.order_date >= DATE_TRUNC('week', m.join_date) + INTERVAL '6 days' THEN (h.price * 10 * 2)
-            ELSE (h.price * 10)
+            WHEN s.order_date BETWEEN m.join_date AND m.join_date + INTERVAL '6 days' THEN price * 10 * 2
+            WHEN s.order_date NOT BETWEEN m.join_date AND m.join_date + INTERVAL '6 days' AND h.product_name = 'sushi' THEN price * 10 * 2
+            WHEN h.product_name = 'sushi' THEN price * 10 * 2 
+            ELSE price * 10
         END
-    ) AS total_points
-FROM
+    ) AS total_point
+FROM 
     dannys_diner.sales AS s
-INNER JOIN
-	dannys_diner.members AS m
-    USING(customer_id)
 INNER JOIN
     dannys_diner.menu AS h
     USING (product_id)
-WHERE
-	extract(month from s.order_date) = extract(month from date '2021-01-31') 
-    and s.customer_id in ('A','B')
-GROUP BY
-    s.customer_id;
+LEFT JOIN
+    dannys_diner.members AS m
+    USING (customer_id)
+where s.customer_id in (select customer_id from dannys_diner.members) and extract(month from s.order_date) = 1
+GROUP BY customer_id
+ORDER BY customer_id;
 
+
+------------------------------------==================----------------------------------=================-----------------------------
+
+
+
+WITH all_join AS (
+    SELECT
+        s.customer_id,
+        s.order_date,
+        m.product_name,
+        m.price,
+        CASE
+            WHEN mem.customer_id IS NOT NULL AND s.order_date >= mem.join_date THEN 'Y'
+            ELSE 'N'
+        END AS member
+    FROM
+        dannys_diner.sales AS s
+        INNER JOIN dannys_diner.menu AS m
+        USING (product_id)
+        LEFT JOIN dannys_diner.members AS mem
+        ON s.customer_id = mem.customer_id
+)
+select *
+from all_join;
+
+---------------------================-----------------------=--------------------------
+
+WITH mem AS (
+    SELECT
+        s.customer_id,
+        s.order_date,
+        m.product_name,
+        m.price,
+        CASE
+            WHEN mem.customer_id IS NOT NULL AND s.order_date >= mem.join_date THEN 'Y'
+            ELSE 'N'
+        END AS member
+    FROM
+        dannys_diner.sales AS s
+        INNER JOIN dannys_diner.menu AS m
+        USING (product_id)
+        LEFT JOIN dannys_diner.members AS mem
+        ON s.customer_id = mem.customer_id
+)
+SELECT *,
+    CASE 
+        WHEN member = 'Y' THEN RANK() OVER (PARTITION BY customer_id, member ORDER BY order_date)
+    END AS ranking
+FROM mem;
+
+    
+    
+------------------------------------------------------------------======-----------------------
 
 -- Example Query:
 SELECT
