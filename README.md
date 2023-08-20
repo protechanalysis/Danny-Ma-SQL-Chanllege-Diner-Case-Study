@@ -34,8 +34,10 @@ Danny has shared with you 3 key datasets for this case study:
 5.  Which item was the most popular for each customer?
 6.  Which item was purchased first by the customer after they became a member?
 7.  Which item was purchased just before the customer became a member?
-8.  What is the total items and amount spent for each member before they became a member?
+8.  What are the total items and amount spent for each member before they became a member?
 9.  If each $1 spent equates to 10 points and sushi has a 2x points multiplier - how many points would each customer have?
 10.  In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi - how many points do customers A and B have at the end of January?
 
 click [here](https://github.com/protechanalysis/Danny-Ma-SQL-Diner-Case-Study/blob/main/Danny's%20Diner) for query.
+
+This case study assesses my proficiency in Common Table Expressions, applying Group By aggregates, utilizing Window Functions for ranking purposes, and effectively employing Table Joins.
