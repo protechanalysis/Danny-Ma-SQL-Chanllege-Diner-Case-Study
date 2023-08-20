@@ -3,7 +3,7 @@
 
 ![](image_case_study_1.png)
 
-**This repository hosts the solutions for Week 1 of the 8 Weeks SQL challenge by DannyMa.**
+**This repository hosts the solutions for Week 1 of the 8 Weeks SQL challenge by DannyMa.** [Challenge_page](https://8weeksqlchallenge.com/case-study-1/)
 
 ## Introduction
 Danny's strong passion for Japanese cuisine led him to venture into the restaurant business early in 2021. He courageously established a charming eatery specializing in his top three dishes: sushi, curry, and ramen. In this endeavour, Danny's Diner has accumulated fundamental operational data during its initial months. However, as a data analyst, I'm now sought to assist the restaurant in leveraging this data to optimize its operations and ensure its sustainability. The challenge lies in transforming this raw data into actionable insights that can guide decision-making and ultimately contribute to the success of Danny's Diner.
