@@ -18,48 +18,45 @@ order by total_amount_spent desc;
 -- 2. How many days has each customer visited the restaurant?
 select 
 	customer_id,	
-    count(*)
+    count(distinct order_date) as num_days_visited
 from dannys_diner.sales
 group by customer_id
 order by count(*) desc;
 -- 3. What was the first item from the menu purchased by each customer?
-select 
-	customer_id,
-    product_name,
-    min(order_date)
+with first_order as (
+	select customer_id,
+			product_name,
+		rank() over(partition by customer_id order by order_date) as ranking
 from
 	dannys_diner.sales
 inner join dannys_diner.menu
-	using(product_id)
-group by customer_id, product_name;
+	using(product_id))
+select customer_id,
+		product_name
+from first_order
+where ranking = 1;
 -- 4. What is the most purchased item on the menu and how many times was it purchased by all customers?
 select 
-	product_name,
-	customer_id,	
-    count(*)
+	product_name,	
+    count(*) as num_purchase
 from 
 	dannys_diner.menu
 inner join dannys_diner.sales	
 	using(product_id)
-group by product_name, customer_id
-order by count(*) desc;
+group by product_name
+order by num_purchase desc
+limit 1;
+
 -- 5. Which item was the most popular for each customer?
-select 
-	customer_id,
-    product_name
-from (select customer_id, product_id, count(*)
+with common as (select customer_id, product_name, product_id, count(*) as num_order,
+		row_number() over(partition by customer_id order by count(*) desc) as r
       from dannys_diner.sales
-      group by customer_id, product_id) as d
 inner join dannys_diner.menu
 	using(product_id)
-where count = (select max(count)
-               from (
-                 select customer_id, product_id, count(*)
-      			 from dannys_diner.sales
-      			 group by customer_id, product_id) as f
-               where d.customer_id = f.customer_id)
-group by customer_id, product_name;
-
+group by customer_id, product_name, product_id)
+select customer_id, product_name, num_order
+from common 
+where r = 1;
     
 -- 6. Which item was purchased first by the customer after they became a member?
 SELECT
@@ -114,7 +111,7 @@ INNER JOIN
     USING(product_id);
 
 -- 8. What is the total items and amount spent for each member before they became a member?
-select customer_id, sum(num_order), sum(fh)
+select customer_id, sum(num_order) as total_order, sum(fh) as total_amount
 from (
 		SELECT
     		num.customer_id,
@@ -157,8 +154,8 @@ SELECT
     s.customer_id,
     SUM(
         CASE
-            WHEN s.order_date BETWEEN m.join_date AND m.join_date + INTERVAL '6 days' THEN price * 10 * 2
-            WHEN s.order_date NOT BETWEEN m.join_date AND m.join_date + INTERVAL '6 days' AND h.product_name = 'sushi' THEN price * 10 * 2
+            WHEN s.order_date BETWEEN m.join_date AND m.join_date + INTERVAL '6' day THEN price * 10 * 2
+            WHEN s.order_date NOT BETWEEN m.join_date AND m.join_date + INTERVAL '6' day AND h.product_name = 'sushi' THEN price * 10 * 2
             WHEN h.product_name = 'sushi' THEN price * 10 * 2 
             ELSE price * 10
         END
@@ -176,9 +173,7 @@ GROUP BY customer_id
 ORDER BY customer_id;
 
 
-------------------------------------==================----------------------------------=================-----------------------------
-
-
+-- Join All The Things
 
 WITH all_join AS (
     SELECT
@@ -200,8 +195,7 @@ WITH all_join AS (
 select *
 from all_join;
 
----------------------================-----------------------=--------------------------
-
+-- Rank All The Things 
 WITH mem AS (
     SELECT
         s.customer_id,
@@ -224,19 +218,3 @@ SELECT *,
         WHEN member = 'Y' THEN RANK() OVER (PARTITION BY customer_id, member ORDER BY order_date)
     END AS ranking
 FROM mem;
-
-    
-    
-------------------------------------------------------------------======-----------------------
-
--- Example Query:
-SELECT
-  	product_id,
-    product_name,
-    price
-FROM dannys_diner.menu
-ORDER BY price DESC
-LIMIT 5;
-
-
-workspace source and data source: https://www.db-fiddle.com/f/2rM8RAnq7h5LLDTzZiRWcd/4862
