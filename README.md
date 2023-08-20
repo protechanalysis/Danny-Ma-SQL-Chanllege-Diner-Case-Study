@@ -22,7 +22,7 @@ Danny has shared with you 3 key datasets for this case study:
 
 ![](table1.PNG)  
 
-![](table.PNG)
+![](table2.PNG)
 
 ### Case Study Questions
 
