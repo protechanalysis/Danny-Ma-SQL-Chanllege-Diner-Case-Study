@@ -48,6 +48,13 @@ order by total_amount_spent desc;
 ```
 </details>
 
+### Output:
+customer_id | total_amount_spent
+------------ | ------------
+A    |	76 |
+B    |	74 |
+C    |	36 |
+
 2.  How many days has each customer visited the restaurant?
   <details>
 <summary>Click to show SQL query</summary>
@@ -61,6 +68,13 @@ group by customer_id
 order by num_days_visited desc;
 ```
 </details>
+
+### Output:
+customer_id | num_days_visited
+------------ | ------------
+B | 6
+A | 4
+C | 2
 
 3.  What was the first item from the menu purchased by each customer?
 <details>
@@ -82,6 +96,15 @@ where ranking = 1;
 ```
 </details>
 
+### Output:
+customer_id | product_name
+------------ | ------------
+A | curry
+A | sushi
+B | curry
+C | ramen
+C | ramen
+
 4.  What is the most purchased item on the menu and how many times was it purchased by all customers?
  <details>
 <summary>Click to show SQL query</summary>
@@ -99,6 +122,11 @@ order by num_purchase desc
 limit 1;
 ```
 </details>
+
+### Output:
+product_name | num_purchase
+-----|-----
+ramen | 8
 
 5.  Which item was the most popular for each customer?
  <details>
@@ -118,6 +146,13 @@ from common
 where rank = 1;
 ```
 </details>
+
+### Output:
+customer_id | product_name | num_order
+-----|-----|-----|
+A | ramen | 3
+B | curry | 2
+C | ramen | 3
 
 6.  Which item was purchased first by the customer after they became a member?
  <details>
@@ -151,38 +186,39 @@ inner join
 ```
 </details>
 
+### Output:
+customer_id | first_item_after_membership
+-------|-------
+B | sushi
+A | ramen
+
 7.  Which item was purchased just before the customer became a member?
  <details>
 <summary>Click to show SQL query</summary>
 
 ```sql
-select
+with orders as (select
     s.customer_id,
-    m.product_name as item_before_membership
-from
-    (
-        select
-            s.customer_id,
-            max(s.order_date) as order_date_before_membership
-        from
-            dannys_diner.sales as s
-        inner join
-            dannys_diner.members as m
-            on s.customer_id = m.customer_id
-            and m.join_date > s.order_date 
-        group by
-            s.customer_id
-    ) as sub
-inner join
-    dannys_diner.sales as s
-    on sub.customer_id = s.customer_id
-    and sub.order_date_before_membership = s.order_date
-inner join
-    dannys_diner.menu as m
-    using(product_id);
+    m.product_name
+from dannys_diner.sales as s
+inner join dannys_diner.menu as m
+    using(product_id)
+left join dannys_diner.members
+	using(customer_id)
+where order_date < join_date)
+
+select customer_id, string_agg(product_name, ', ') as item_before_membership
+from orders
+group by customer_id;
 
 ```
 </details>
+
+### Output:
+customer_id | item_before_membership
+-----|-----
+B | sushi, curry, curry
+A | sushi, curry
 
 8.  What are the total items and amount spent for each member before they became a member?
  <details>
@@ -218,6 +254,12 @@ group by customer_id;
 ```
 </details>
 
+### Output:
+customer_id | total_order | total_amount
+-----|-----|-----
+B | 3 | 40
+A | 2 | 25
+
 9.  If each $1 spent equates to 10 points and sushi has a 2x points multiplier - how many points would each customer have?
  <details>
 <summary>Click to show SQL query</summary>
@@ -234,6 +276,13 @@ using(product_id)
 group by customer_id;
 ```
 </details>
+
+### Output:
+customer_id | points
+-----|-----
+B | 940
+C | 360
+A | 860
 
 10.  In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi - how many points do customers A and B have at the end of January?
  <details>
@@ -264,6 +313,11 @@ order by customer_id;
 ```
 </details>
 
+### Output:
+customer_id | total_point
+-----|-----
+A | 1370
+B | 820
 
 
 click [here](https://github.com/protechanalysis/Danny-Ma-SQL-Diner-Case-Study/blob/main/Danny's%20Diner) for full query.
