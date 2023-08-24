@@ -87,30 +87,19 @@ inner join
     using(product_id);
 
 -- 7. Which item was purchased just before the customer became a member?
-select
+with orders as (select
     s.customer_id,
-    m.product_name as item_before_membership
-from
-    (
-        select
-            s.customer_id,
-            max(s.order_date) as order_date_before_membership
-        from
-            dannys_diner.sales as s
-        inner join
-            dannys_diner.members as m
-            on s.customer_id = m.customer_id
-            and m.join_date > s.order_date 
-        group by
-            s.customer_id
-    ) as sub
-inner join
-    dannys_diner.sales as s
-    on sub.customer_id = s.customer_id
-    and sub.order_date_before_membership = s.order_date
-inner join
-    dannys_diner.menu as m
-    using(product_id);
+    m.product_name
+from dannys_diner.sales as s
+inner join dannys_diner.menu as m
+    using(product_id)
+left join dannys_diner.members
+	using(customer_id)
+where order_date < join_date)
+
+select customer_id, string_agg(product_name, ', ') as item_before_membership
+from orders
+group by customer_id;
 
 -- 8. What is the total items and amount spent for each member before they became a member?
 select customer_id, sum(num_order) as total_order, sum(amount) as total_amount
